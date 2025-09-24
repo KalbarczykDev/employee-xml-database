@@ -1,0 +1,9 @@
+<person>
+  <personId>4</personId>
+  <firstName>InternalFirst3</firstName>
+  <lastName>InternalLast3</lastName>
+  <mobile>700000003</mobile>
+  <email>internal3@example.com</email>
+  <pesel>80000000003</pesel>
+  <type>EXTERNAL</type>
+</person>

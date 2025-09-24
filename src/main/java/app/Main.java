@@ -4,34 +4,42 @@ import main.java.repository.PersonXmlRepository;
 
 void main() throws IOException {
 
-    var repo = new PersonXmlRepository();
+    var repository = new PersonXmlRepository();
 
-    var person = new Person(repo.findNextId(Type.EXTERNAL), "John", "Doe", "123456789", "john.doe@example.com", "12345678901", Type.EXTERNAL);
+    seedDB(repository);
 
-    // --- TEST CREATE ---
-    repo.create(person);
-    System.out.println("Created person: " + person);
+}
 
-    // --- TEST FIND BY ID ---
-    var foundById = repo.findById("1");
-    System.out.println("Found by ID: " + foundById);
+void seedDB(final PersonXmlRepository repository) {
+    for (int i = 0; i < 10; i++) {
+        var id = repository.findNextId(Type.EXTERNAL);
+        var person = new Person(
+                id,
+                "ExternalFirst" + i,
+                "ExternalLast" + i,
+                "60000000" + i,
+                "external" + i + "@example.com",
+                "9000000000" + i,
+                Type.EXTERNAL
+        );
+        repository.create(person);
+        System.out.println("Created: " + person);
+    }
 
-    // --- TEST FIND WITH ATTRIBUTES ---
-    var found = repo.find(Type.EXTERNAL, "John", "Doe", null, null, null);
-    System.out.println("Found by attributes: " + found);
-
-    // --- TEST MODIFY ---
-    Person modified = new Person("1", "Johnny", "Doe", "987654321", "johnny.doe@example.com", "12345678901", Type.EXTERNAL);
-    repo.modify(modified);
-    System.out.println("Modified person: " + modified);
-
-    // --- TEST FIND ALL ---
-    var all = repo.findAll();
-    System.out.println("All persons: " + all);
-
-    // --- TEST REMOVE ---
-    var removed = repo.remove("1");
-    System.out.println("Removed person: " + removed);
+    for (int i = 0; i < 10; i++) {
+        var id = repository.findNextId(Type.INTERNAL);
+        var person = new Person(
+                id,
+                "InternalFirst" + i,
+                "InternalLast" + i,
+                "70000000" + i,
+                "internal" + i + "@example.com",
+                "8000000000" + i,
+                Type.INTERNAL
+        );
+        repository.create(person);
+        System.out.println("Created: " + person);
+    }
 }
 
 
