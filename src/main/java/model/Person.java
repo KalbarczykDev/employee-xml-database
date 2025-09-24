@@ -1,7 +1,7 @@
 package main.java.model;
 
 public record Person(
-        String personId,
+        Long personId,
         String firstName,
         String lastName,
         String mobile,

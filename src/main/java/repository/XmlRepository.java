@@ -39,9 +39,9 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public Optional<T> findById(final String id) {
+    public Optional<T> findById(final Long id) {
         for (var type : Type.values()) {
-            var file = resolvePath(type, id);
+            var file = resolvePath(type,String.valueOf(id));
             if (file.exists()) {
                 try {
                     return Optional.of(parseEntity(file));

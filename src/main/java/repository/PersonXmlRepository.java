@@ -13,7 +13,7 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
     protected Person parseEntity(final File file) {
         try {
             var lines = Files.readAllLines(file.toPath());
-            var id = extractTagValue(lines, "personId");
+            var id = Long.valueOf(extractTagValue(lines, "personId"));
             var firstName = extractTagValue(lines, "firstName");
             var lastName = extractTagValue(lines, "lastName");
             var mobile = extractTagValue(lines, "mobile");
@@ -71,7 +71,7 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
 
     @Override
     protected String entityId(final Person entity) {
-        return entity.personId();
+        return String.valueOf(entity.personId());
     }
 
     @Override
