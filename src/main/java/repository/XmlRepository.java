@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-public abstract class XmlRepository<T> implements Repository<T> {
+public abstract class XmlRepository<T> {
 
     protected abstract T parseEntity(final File file) throws IOException;
 
@@ -16,6 +16,8 @@ public abstract class XmlRepository<T> implements Repository<T> {
     protected abstract String entityId(final T entity);
 
     protected abstract Type entityType(final T entity);
+
+    protected abstract Optional<T> find(final Object... attributes) throws IOException;
 
     protected String typeToBasePath(final Type type) {
         return switch (type) {
@@ -38,7 +40,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         return null;
     }
 
-    @Override
+
     public Optional<T> findById(final String id) {
         for (var type : Type.values()) {
             var file = resolvePath(type, id);
@@ -53,7 +55,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         return Optional.empty();
     }
 
-    @Override
+
     public void create(final T entity) {
         var file = resolvePath(entityType(entity), entityId(entity));
         if (file.exists()) {
@@ -66,7 +68,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         }
     }
 
-    @Override
+
     public boolean remove(final String id) {
         for (var type : Type.values()) {
             var file = resolvePath(type, id);
@@ -75,7 +77,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         return false;
     }
 
-    @Override
+
     public void modify(final T entity) {
         var file = resolvePath(entityType(entity), entityId(entity));
 
@@ -86,7 +88,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         }
     }
 
-    @Override
+
     public List<T> findAll() throws IOException {
         var all = new ArrayList<T>();
 
@@ -102,7 +104,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         return all;
     }
 
-    @Override
+
     public String findNextId(final Type type) {
         var maxId = 0;
         var dir = new File(typeToBasePath(type));

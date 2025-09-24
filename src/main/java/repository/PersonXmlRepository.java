@@ -9,8 +9,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 public final class PersonXmlRepository extends XmlRepository<Person> {
-
-
     @Override
     protected Person parseEntity(final File file) throws IOException {
         var lines = Files.readAllLines(file.toPath());
@@ -40,7 +38,6 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
         );
         Files.write(file.toPath(), lines);
     }
-
 
     @Override
     public Optional<Person> find(final Object... attributes) throws IOException {
@@ -72,6 +69,5 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
     protected Type entityType(final Person entity) {
         return entity.type();
     }
-
 
 }
