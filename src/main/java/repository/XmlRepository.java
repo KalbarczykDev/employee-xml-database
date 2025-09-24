@@ -4,7 +4,6 @@ package main.java.repository;
 import main.java.model.Type;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public abstract class XmlRepository<T> {

@@ -36,12 +36,12 @@ public final class PersonService {
                        final String mobile,
                        final String pesel,
                        final String email) {
-        //TODO:  Basic validation
 
         var person = new Person(
                 repository.findNextId(type), firstName, lastName, mobile, pesel, email, type
         );
 
+        validatePerson(person);
         repository.create(person);
     }
 
@@ -55,11 +55,39 @@ public final class PersonService {
     }
 
     public void modify(final Person person) {
-        //TODO: Basic validation
+        validatePerson(person);
         repository.modify(person);
     }
 
     public List<Person> findAll() {
         return repository.findAll();
+    }
+
+    private void validatePerson(final Person person) {
+
+        if (person.firstName() == null || person.firstName().isBlank()) {
+            throw new IllegalArgumentException("First name cannot be empty");
+        }
+
+        if (person.lastName() == null || person.lastName().isBlank()) {
+            throw new IllegalArgumentException("Last name cannot be empty");
+        }
+
+        if (person.mobile() == null || !person.mobile().matches("\\d{9,15}")) {
+            throw new IllegalArgumentException("Mobile must be numeric and 9-15 digits long");
+        }
+
+        if (person.email() == null || !person.email().matches("^.+@.+\\..+$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+
+        if (person.pesel() == null || !person.pesel().matches("\\d{11}")) {
+            throw new IllegalArgumentException("PESEL must be exactly 11 digits");
+        }
+
+        if (person.type() == null) {
+            throw new IllegalArgumentException("Type cannot be null");
+
+        }
     }
 }
