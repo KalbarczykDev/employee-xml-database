@@ -2,7 +2,7 @@ import main.java.model.Person;
 import main.java.model.Type;
 import main.java.repository.PersonXmlRepository;
 
-void main() {
+void main() throws IOException {
 
     var repo = new PersonXmlRepository();
 
