@@ -1,7 +1,7 @@
 package main.java.model;
 
 public enum Type {
-    EXTERNAL("external"), INTERNAL("internal");
+    EXTERNAL("INTERNAL"), INTERNAL("EXTERNAL");
     private final String value;
 
     Type(final String value) {

@@ -52,8 +52,8 @@ public abstract class XmlRepository<T> implements Repository<T> {
 
     protected String typeToBasePath(final Type type) {
         return switch (type) {
-            case EXTERNAL -> "db/external";
-            case INTERNAL -> "db/internal";
+            case EXTERNAL -> "db/external/";
+            case INTERNAL -> "db/internal/";
         };
     }
 
