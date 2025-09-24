@@ -41,7 +41,7 @@ public abstract class XmlRepository<T> {
 
     public Optional<T> findById(final Long id) {
         for (var type : Type.values()) {
-            var file = resolvePath(type,String.valueOf(id));
+            var file = resolvePath(type, String.valueOf(id));
             if (file.exists()) {
                 try {
                     return Optional.of(parseEntity(file));
@@ -67,9 +67,9 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public boolean remove(final String id) {
+    public boolean remove(final Long id) {
         for (var type : Type.values()) {
-            var file = resolvePath(type, id);
+            var file = resolvePath(type, String.valueOf(id));
             if (file.exists()) return file.delete();
         }
         return false;
@@ -87,7 +87,7 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public List<T> findAll()  {
+    public List<T> findAll() {
         var all = new ArrayList<T>();
 
         for (var type : Type.values()) {
@@ -103,11 +103,11 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public String findNextId(final Type type) {
-        var maxId = 0;
+    public Long findNextId(final Type type) {
+        var maxId = 0L;
         var dir = new File(typeToBasePath(type));
         if (!dir.exists()) {
-            return "0";
+            return 0L;
         }
         var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
 
@@ -122,7 +122,7 @@ public abstract class XmlRepository<T> {
                 }
             }
         }
-        return String.valueOf(maxId + 1);
+        return maxId + 1;
     }
 
 }
