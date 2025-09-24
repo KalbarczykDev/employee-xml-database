@@ -3,49 +3,36 @@ package main.java.repository;
 import main.java.model.Person;
 import main.java.model.Type;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
-public final class PersonXmlRepository {
+public final class PersonXmlRepository extends XmlRepository<Person> {
 
-    private static final String ROOT_ELEMENT = "person";
-
-    private Document loadXml(final File file) throws ParserConfigurationException, IOException, SAXException {
-        var factory = DocumentBuilderFactory.newInstance();
-        var builder = factory.newDocumentBuilder();
-        return builder.parse(file);
+    @Override
+    protected String rootElement() {
+        return "person";
+    }
+    @Override
+    protected Person documentToEntity(final Document document) {
+        var id = getElementValue(document, "personId");
+        var firstName = getElementValue(document, "firstName");
+        var lastName = getElementValue(document, "lastName");
+        var mobile = getElementValue(document, "mobile");
+        var email = getElementValue(document, "email");
+        var pesel = getElementValue(document, "pesel");
+        var type = Type.valueOf(getElementValue(document, "type"));
+        return new Person(id, firstName, lastName, mobile, email, pesel, type);
     }
 
-    private void writeXml(final Document document, final File file) throws TransformerException {
-        var transformer = TransformerFactory.newInstance().newTransformer();
-        var source = new DOMSource(document);
-        var result = new StreamResult(file);
-        transformer.transform(source, result);
-    }
-
-    private String getElementValue(final Document document, final String tagName) {
-        var list = document.getElementsByTagName(tagName);
-        if (list.getLength() > 0) {
-            return list.item(0).getTextContent();
-        }
-        return null;
-    }
-
-    private Document entityToDocument(final Person entity) {
+    @Override
+    protected Document entityToDocument(final Person entity) {
         try {
 
             var document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 
-            var root = document.createElement(ROOT_ELEMENT);
+            var root = document.createElement(rootElement());
             document.appendChild(root);
 
             var id = document.createElement("personId");
@@ -71,6 +58,10 @@ public final class PersonXmlRepository {
             var pesel = document.createElement("pesel");
             pesel.setTextContent(entity.pesel());
 
+            var type = document.createElement("type");
+            type.setTextContent(entity.type().toString());
+            root.appendChild(type);
+
             root.appendChild(pesel);
             return document;
         } catch (Exception e) {
@@ -79,55 +70,23 @@ public final class PersonXmlRepository {
         }
     }
 
-    private Person documentToEntity(final Document document) {
-        var id = getElementValue(document, "personId");
-        var firstName = getElementValue(document, "firstName");
-        var lastName = getElementValue(document, "lastName");
-        var mobile = getElementValue(document, "mobile");
-        var email = getElementValue(document, "email");
-        var pesel = getElementValue(document, "pesel");
 
-        var type = id != null && new File("db/external/" + id + ".xml").exists() ? Type.EXTERNAL : Type.INTERNAL;
-
-        return new Person(id, firstName, lastName, mobile, email, pesel, type);
-    }
-
-    private String typeToBasePath(final Type type) {
-        return switch (type) {
-            case EXTERNAL -> "db/external";
-            case INTERNAL -> "db/internal";
-        };
-    }
-
-    private File resolvePath(final Type type, final String personId) {
-        return new File(typeToBasePath(type) + personId + ".xml");
-    }
-
-
-    public Optional<Person> findById(final String id) {
-        for (var type : Type.values()) {
-            var file = resolvePath(type, id);
-            if (file.exists()) {
-                try {
-                    final var document = loadXml(file);
-                    return Optional.of(documentToEntity(document));
-                } catch (Exception e) {
-                    e.printStackTrace(); //TODO: add more robust handling
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-
+    @Override
     public Optional<Person> find(
-            final Type type,
-            final String firstName,
-            final String lastName,
-            final String mobile,
-            final String pesel,
-            final String email
+            final Object... attributes
     ) {
+
+        if (attributes.length == 0) {
+            return Optional.empty();
+        }
+
+        var type = (Type) attributes[0];
+        String firstName = attributes.length > 1 ? (String) attributes[1] : null;
+        String lastName = attributes.length > 2 ? (String) attributes[2] : null;
+        String mobile = attributes.length > 3 ? (String) attributes[3] : null;
+        String pesel = attributes.length > 4 ? (String) attributes[4] : null;
+        String email = attributes.length > 5 ? (String) attributes[5] : null;
+
         var baseDir = new File(typeToBasePath(type));
         var xmlFiles = baseDir.listFiles((_, name) -> name.endsWith(".xml"));
 
@@ -156,53 +115,14 @@ public final class PersonXmlRepository {
                 .findFirst();
     }
 
-
-    public void create(final Person entity) {
-        try {
-            final var document = entityToDocument(entity);
-            final var file = resolvePath(entity.type(), entity.personId());
-            writeXml(document, file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    @Override
+    protected String entityId(Person entity) {
+        return entity.personId();
     }
 
-
-    public boolean remove(String id) {
-        for (var type : Type.values()) {
-            final var file = resolvePath(type, id);
-            if (file.exists()) {
-                return file.delete();
-            }
-        }
-        return false;
-    }
-
-
-    public void modify(Person entity) {
-        create(entity);
-    }
-
-
-    public List<Person> findAll() {
-
-        final var baseDir = new File("db/");
-        final var xmlFiles = baseDir.listFiles((_, name) -> name.endsWith(".xml"));
-
-        if (xmlFiles == null) {
-            return List.of();
-        }
-
-        return Arrays.stream(xmlFiles).map(file -> {
-            try {
-                final var document = loadXml(file);
-                return documentToEntity(document);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }).filter(Objects::nonNull).toList();
+    @Override
+    protected Type entityType(Person entity) {
+        return entity.type();
     }
 
 
