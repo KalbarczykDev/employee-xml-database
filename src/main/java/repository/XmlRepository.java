@@ -2,12 +2,12 @@ package main.java.repository;
 
 
 import main.java.model.Type;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 public abstract class XmlRepository<T> implements Repository<T> {
-    protected abstract String rootElement();
 
     protected abstract T parseEntity(final File file) throws IOException;
 
@@ -28,7 +28,7 @@ public abstract class XmlRepository<T> implements Repository<T> {
         return new File(typeToBasePath(type) + entityId + ".xml");
     }
 
-    protected String extractTagValue(final List<String> lines,final String tag) {
+    protected String extractTagValue(final List<String> lines, final String tag) {
         for (var line : lines) {
             line = line.trim();
             if (line.startsWith("<" + tag + ">") && line.endsWith("</" + tag + ">")) {
@@ -56,6 +56,9 @@ public abstract class XmlRepository<T> implements Repository<T> {
     @Override
     public void create(final T entity) {
         var file = resolvePath(entityType(entity), entityId(entity));
+        if (file.exists()) {
+            throw new RuntimeException("Entity with ID '" + entityId(entity) + "' already exists.");
+        }
         try {
             writeEntity(file, entity);
         } catch (Exception e) {
@@ -67,15 +70,20 @@ public abstract class XmlRepository<T> implements Repository<T> {
     public boolean remove(final String id) {
         for (var type : Type.values()) {
             var file = resolvePath(type, id);
-            if (file.exists())
-                return file.delete();
+            if (file.exists()) return file.delete();
         }
         return false;
     }
 
     @Override
     public void modify(final T entity) {
-        create(entity);
+        var file = resolvePath(entityType(entity), entityId(entity));
+
+        try {
+            writeEntity(file, entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error modifying entity", e);
+        }
     }
 
     @Override
@@ -85,13 +93,36 @@ public abstract class XmlRepository<T> implements Repository<T> {
         for (var type : Type.values()) {
             var dir = new File(typeToBasePath(type));
             if (!dir.exists()) continue;
-            var files = dir.listFiles((d, name) -> name.endsWith(".xml"));
+            var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
             if (files == null) continue;
             for (var file : files) {
                 all.add(parseEntity(file));
             }
         }
         return all;
+    }
+
+    @Override
+    public String findNextId(final Type type) {
+        var maxId = 0;
+        var dir = new File(typeToBasePath(type));
+        if (!dir.exists()) {
+            return "0";
+        }
+        var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
+
+        if (files != null) {
+            for (var file : files) {
+                var name = file.getName();
+                var idPart = name.substring(0, name.length() - 4);
+                try {
+                    var id = Integer.parseInt(idPart);
+                    if (id > maxId) maxId = id;
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return String.valueOf(maxId + 1);
     }
 
 }

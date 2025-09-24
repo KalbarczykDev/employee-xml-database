@@ -6,7 +6,7 @@ void main() throws IOException {
 
     var repo = new PersonXmlRepository();
 
-    var person = new Person("1", "John", "Doe", "123456789", "john.doe@example.com", "12345678901", Type.EXTERNAL);
+    var person = new Person(repo.findNextId(Type.EXTERNAL), "John", "Doe", "123456789", "john.doe@example.com", "12345678901", Type.EXTERNAL);
 
     // --- TEST CREATE ---
     repo.create(person);
@@ -30,8 +30,8 @@ void main() throws IOException {
     System.out.println("All persons: " + all);
 
     // --- TEST REMOVE ---
-   // boolean removed = repo.remove("1");
-   // System.out.println("Removed person: " + removed);
+    var removed = repo.remove("1");
+    System.out.println("Removed person: " + removed);
 }
 
 

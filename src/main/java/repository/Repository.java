@@ -1,11 +1,15 @@
 package main.java.repository;
 
 
+import main.java.model.Type;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public interface Repository<T> {
+    String findNextId(final Type type);
+
     Optional<T> findById(final String id);
 
     Optional<T> find(final Object... attributes) throws IOException;

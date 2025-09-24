@@ -10,10 +10,6 @@ import java.util.*;
 
 public final class PersonXmlRepository extends XmlRepository<Person> {
 
-    @Override
-    protected String rootElement() {
-        return "person";
-    }
 
     @Override
     protected Person parseEntity(final File file) throws IOException {
@@ -30,7 +26,7 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
     }
 
     @Override
-    protected void writeEntity(final File file,final Person entity) throws IOException {
+    protected void writeEntity(final File file, final Person entity) throws IOException {
         List<String> lines = List.of(
                 "<person>",
                 "  <personId>" + entity.personId() + "</personId>",
