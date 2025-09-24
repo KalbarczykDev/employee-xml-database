@@ -1,5 +1,15 @@
 package main.java.model;
 
 public enum Type {
-    EXTERNAL,INTERNAL
+    EXTERNAL("external"), INTERNAL("internal");
+    private final String value;
+
+    Type(final String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }
