@@ -16,6 +16,9 @@ public final class PersonService {
     }
 
     public Optional<Person> findById(final Long id) {
+        if (id < 0) {
+            throw new IllegalArgumentException("id is negative");
+        }
         return repository.findById(id);
     }
 
@@ -45,16 +48,12 @@ public final class PersonService {
         repository.create(person);
     }
 
-    public void deleteById(final Long id) {
-        if (repository.remove(id)) {
-            IO.println("Deleted person with id: " + id);
-        }
-        {
-            IO.println("Person with id: " + id + " was not deleted.");
-        }
+    public boolean deleteById(final Long id) {
+        return repository.remove(id);
     }
 
     public void modify(final Person person) {
+        if (person == null) throw new IllegalArgumentException("person is null");
         validatePerson(person);
         repository.modify(person);
     }
@@ -77,9 +76,9 @@ public final class PersonService {
             throw new IllegalArgumentException("Mobile must be numeric and 9-15 digits long");
         }
 
-        if (person.email() == null || !person.email().matches("^.+@.+\\..+$")) {
-            throw new IllegalArgumentException("Invalid email format");
-        }
+     //   if (person.email() == null || !person.email().matches("^[\\w-.]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+       //     throw new IllegalArgumentException("Invalid email format");
+       // }
 
         if (person.pesel() == null || !person.pesel().matches("\\d{11}")) {
             throw new IllegalArgumentException("PESEL must be exactly 11 digits");
