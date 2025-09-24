@@ -10,22 +10,27 @@ import java.util.*;
 
 public final class PersonXmlRepository extends XmlRepository<Person> {
     @Override
-    protected Person parseEntity(final File file) throws IOException {
-        var lines = Files.readAllLines(file.toPath());
-        var id = extractTagValue(lines, "personId");
-        var firstName = extractTagValue(lines, "firstName");
-        var lastName = extractTagValue(lines, "lastName");
-        var mobile = extractTagValue(lines, "mobile");
-        var email = extractTagValue(lines, "email");
-        var pesel = extractTagValue(lines, "pesel");
-        var typeStr = extractTagValue(lines, "type");
-        var type = Type.fromString(typeStr);
-        return new Person(id, firstName, lastName, mobile, email, pesel, type);
+    protected Person parseEntity(final File file) {
+        try {
+            var lines = Files.readAllLines(file.toPath());
+            var id = extractTagValue(lines, "personId");
+            var firstName = extractTagValue(lines, "firstName");
+            var lastName = extractTagValue(lines, "lastName");
+            var mobile = extractTagValue(lines, "mobile");
+            var email = extractTagValue(lines, "email");
+            var pesel = extractTagValue(lines, "pesel");
+            var typeStr = extractTagValue(lines, "type");
+            var type = Type.fromString(typeStr);
+            return new Person(id, firstName, lastName, mobile, email, pesel, type);
+        } catch (IOException e) {
+            throw new RuntimeException("Error when parsing entity: " + e);
+        }
+
     }
 
     @Override
-    protected void writeEntity(final File file, final Person entity) throws IOException {
-        List<String> lines = List.of(
+    protected void writeEntity(final File file, final Person entity) {
+        var lines = List.of(
                 "<person>",
                 "  <personId>" + entity.personId() + "</personId>",
                 "  <firstName>" + entity.firstName() + "</firstName>",
@@ -36,19 +41,23 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
                 "  <type>" + entity.type().toString() + "</type>",
                 "</person>"
         );
-        Files.write(file.toPath(), lines);
+        try {
+            Files.write(file.toPath(), lines);
+        } catch (IOException e) {
+            throw new RuntimeException("Error when writing entity: " + e);
+        }
+
     }
 
-    @Override
-    public Optional<Person> find(final Object... attributes) throws IOException {
-        if (attributes.length == 0) return Optional.empty();
 
-        var type = (Type) attributes[0];
-        var firstName = attributes.length > 1 ? (String) attributes[1] : null;
-        var lastName = attributes.length > 2 ? (String) attributes[2] : null;
-        var mobile = attributes.length > 3 ? (String) attributes[3] : null;
-        var pesel = attributes.length > 4 ? (String) attributes[4] : null;
-        var email = attributes.length > 5 ? (String) attributes[5] : null;
+    public Optional<Person> find(
+            final Type type,
+            final String firstName,
+            final String lastName,
+            final String mobile,
+            final String pesel,
+            final String email
+    ) {
 
         return findAll().stream()
                 .filter(p -> p.type() == type)

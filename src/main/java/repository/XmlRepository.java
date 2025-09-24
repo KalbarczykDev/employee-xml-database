@@ -9,15 +9,13 @@ import java.util.*;
 
 public abstract class XmlRepository<T> {
 
-    protected abstract T parseEntity(final File file) throws IOException;
+    protected abstract T parseEntity(final File file);
 
-    protected abstract void writeEntity(final File file, final T entity) throws IOException;
+    protected abstract void writeEntity(final File file, final T entity);
 
     protected abstract String entityId(final T entity);
 
     protected abstract Type entityType(final T entity);
-
-    protected abstract Optional<T> find(final Object... attributes) throws IOException;
 
     protected String typeToBasePath(final Type type) {
         return switch (type) {
@@ -89,7 +87,7 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public List<T> findAll() throws IOException {
+    public List<T> findAll()  {
         var all = new ArrayList<T>();
 
         for (var type : Type.values()) {
