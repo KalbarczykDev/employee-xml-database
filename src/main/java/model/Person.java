@@ -6,6 +6,7 @@ public record Person(
         String lastName,
         String mobile,
         String email,
-        String pesel
+        String pesel,
+        Type type
 ) {
 }
