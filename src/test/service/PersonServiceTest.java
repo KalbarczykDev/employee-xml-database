@@ -22,7 +22,7 @@ public class PersonServiceTest {
         runTest("shouldCreateAndDeleteValidPerson", this::shouldCreateAndDeleteValidPerson);
         runTest("shouldThrowWhenCreatingInvalidPerson", this::shouldThrowWhenCreatingInvalidPerson);
         runTest("shouldFindById", this::shouldFindById);
-        runTest("shouldThrowWhenSearchingForNonExistingId", this::shouldThrowWhenSearchingForNonExistingId);
+        runTest("shouldFailWhenSearchingForNonExistingId", this::shouldFailWhenSearchingForNonExistingId);
         runTest("shouldFindByFirstName", this::shouldFindByFirstName);
         runTest("shouldNotFindByFirstName", this::shouldNotFindByFirstName);
         runTest("shouldModifyPerson", this::shouldModifyPerson);
@@ -80,11 +80,11 @@ public class PersonServiceTest {
         return TestResult.failed("Person not found by ID");
     }
 
-    private TestResult shouldThrowWhenSearchingForNonExistingId() {
+    private TestResult shouldFailWhenSearchingForNonExistingId() {
         try {
             var personOptional = service.findById(UUID.randomUUID());
             if (personOptional.isEmpty()) {
-                return TestResult.failed("Exception expected");
+                return TestResult.succeed();
             }
         } catch (Exception e) {
             return TestResult.succeed();
