@@ -22,6 +22,11 @@ cd employee-xml-database
 Open the project in your preferred IDE or compile and run from the terminal.
 The application will execute prepared tests to demonstrate functionality.
 
+## Features
+- Find Employee by attributes (type,firstName,lastName,email,phone,pesel)
+- Create/Remove/Modify Employee
+- XML based database
+
 ## Contributing
 
 This is a portfolio project, so I do not expect external pull requests.
