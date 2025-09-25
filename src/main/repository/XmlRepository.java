@@ -1,7 +1,7 @@
-package main.java.repository;
+package main.repository;
 
 
-import main.java.model.Type;
+import main.model.Type;
 
 import java.io.File;
 import java.util.*;
@@ -102,25 +102,27 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public Long findNextId(final Type type) {
-        var maxId = 0L;
-        var dir = new File(typeToBasePath(type));
-        if (!dir.exists()) {
-            return 0L;
-        }
-        var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
+    public Long findNextId() {
+        long maxId = -1L;
 
-        if (files != null) {
+        for (Type type : Type.values()) {
+            var dir = new File(typeToBasePath(type));
+            if (!dir.exists()) continue;
+
+            var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
+            if (files == null) continue;
+
             for (var file : files) {
                 var name = file.getName();
                 var idPart = name.substring(0, name.length() - 4);
                 try {
-                    var id = Integer.parseInt(idPart);
+                    long id = Long.parseLong(idPart);
                     if (id > maxId) maxId = id;
                 } catch (NumberFormatException ignored) {
                 }
             }
         }
+
         return maxId + 1;
     }
 

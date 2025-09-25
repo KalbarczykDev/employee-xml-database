@@ -1,7 +1,7 @@
-package main.java.repository;
+package main.repository;
 
-import main.java.model.Person;
-import main.java.model.Type;
+import main.model.Person;
+import main.model.Type;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public final class PersonXmlRepository extends XmlRepository<Person> {
     ) {
 
         return findAll().stream()
-                .filter(p -> p.type() == type)
+                .filter(p -> type == null || p.type() == type)
                 .filter(p -> firstName == null || p.firstName().equals(firstName))
                 .filter(p -> lastName == null || p.lastName().equals(lastName))
                 .filter(p -> mobile == null || p.mobile().equals(mobile))

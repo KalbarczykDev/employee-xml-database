@@ -1,4 +1,4 @@
-package main.java.model;
+package main.model;
 
 public enum Type {
     EXTERNAL("INTERNAL"), INTERNAL("EXTERNAL");

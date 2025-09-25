@@ -1,8 +1,8 @@
-package main.java.service;
+package main.service;
 
-import main.java.model.Person;
-import main.java.model.Type;
-import main.java.repository.PersonXmlRepository;
+import main.model.Person;
+import main.model.Type;
+import main.repository.PersonXmlRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +41,7 @@ public final class PersonService {
                        final String email) {
 
         var person = new Person(
-                repository.findNextId(type), firstName, lastName, mobile, pesel, email, type
+                repository.findNextId(), firstName, lastName, mobile, email, pesel, type
         );
 
         validatePerson(person);
@@ -76,12 +76,14 @@ public final class PersonService {
             throw new IllegalArgumentException("Mobile must be numeric and 9-15 digits long");
         }
 
-     //   if (person.email() == null || !person.email().matches("^[\\w-.]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
-       //     throw new IllegalArgumentException("Invalid email format");
-       // }
 
-        if (person.pesel() == null || !person.pesel().matches("\\d{11}")) {
+        if (person.pesel() == null || !person.pesel().trim().matches("\\d{11}")) {
             throw new IllegalArgumentException("PESEL must be exactly 11 digits");
+        }
+
+
+        if (person.email() == null || !person.email().trim().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new IllegalArgumentException("Invalid email format");
         }
 
         if (person.type() == null) {

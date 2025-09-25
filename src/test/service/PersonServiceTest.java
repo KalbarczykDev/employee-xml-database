@@ -1,12 +1,10 @@
-package test.java.service;
+package test.service;
 
-import main.java.model.Person;
-import main.java.model.Type;
-import main.java.service.PersonService;
-import test.java.TestResult;
-import test.java.TestRunner;
-
-import java.util.List;
+import main.model.Person;
+import main.model.Type;
+import main.service.PersonService;
+import test.TestResult;
+import test.TestRunner;
 
 
 public class PersonServiceTest {
@@ -92,7 +90,7 @@ public class PersonServiceTest {
     // ------------------ FIND BY FIRST NAME ------------------
 
     private TestResult shouldFindByFirstName() {
-        var personOpt = service.find(null, "ExternalFirst0", null, null, null, null);
+        var personOpt = service.find(null, "ExternalFirst1", null, null, null, null);
         if (personOpt.isPresent()) {
             return TestResult.succeed();
         }
@@ -111,7 +109,7 @@ public class PersonServiceTest {
 
     private TestResult shouldModifyPerson() {
         try {
-            var modified = new Person(1L, "Johnny", "Doe", "123456789", "12345678901", "john@example.com", Type.EXTERNAL);
+            var modified = new Person(1L, "Johnny", "Doe", "123456789", "john@example.com", "12345678901", Type.EXTERNAL);
             service.modify(modified);
 
             var retrieved = service.findById(1L);
@@ -132,7 +130,7 @@ public class PersonServiceTest {
                 return TestResult.failed("Person not found by ID");
             }
             var person = new Person(personOptional.get().personId(), "John", "Doe", "123456789",
-                    "12345678901", "invalid-email", Type.EXTERNAL);
+                    "invalid-email", "12345678910", Type.EXTERNAL);
             service.modify(person);
             return TestResult.failed("Expected exception");
         } catch (Exception e) {
