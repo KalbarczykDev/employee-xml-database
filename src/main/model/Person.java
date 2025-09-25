@@ -1,7 +1,9 @@
 package main.model;
 
+import java.util.UUID;
+
 public record Person(
-        Long personId,
+        UUID personId,
         String firstName,
         String lastName,
         String mobile,

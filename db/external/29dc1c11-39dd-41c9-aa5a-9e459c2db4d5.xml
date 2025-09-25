@@ -1,9 +1,9 @@
 <person>
-  <personId>2</personId>
+  <personId>29dc1c11-39dd-41c9-aa5a-9e459c2db4d5</personId>
   <firstName>ExternalFirst3</firstName>
   <lastName>ExternalLast3</lastName>
-  <mobile>6000000003</mobile>
+  <mobile>1000000003</mobile>
   <email>external3@example.com</email>
-  <pesel>90000000003</pesel>
+  <pesel>11111111113</pesel>
   <type>INTERNAL</type>
 </person>

@@ -6,6 +6,7 @@ import main.repository.PersonXmlRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class PersonService {
 
@@ -15,10 +16,7 @@ public final class PersonService {
         this.repository = repository;
     }
 
-    public Optional<Person> findById(final Long id) {
-        if (id < 0) {
-            throw new IllegalArgumentException("id is negative");
-        }
+    public Optional<Person> findById(final UUID id) {
         return repository.findById(id);
     }
 
@@ -33,22 +31,23 @@ public final class PersonService {
         return repository.find(type, firstName, lastName, mobile, pesel, email);
     }
 
-    public void create(final Type type,
-                       final String firstName,
-                       final String lastName,
-                       final String mobile,
-                       final String pesel,
-                       final String email) {
+    public Person create(final Type type,
+                         final String firstName,
+                         final String lastName,
+                         final String mobile,
+                         final String pesel,
+                         final String email) {
 
         var person = new Person(
-                repository.findNextId(), firstName, lastName, mobile, email, pesel, type
+                repository.generateId(), firstName, lastName, mobile, email, pesel, type
         );
 
         validatePerson(person);
         repository.create(person);
+        return person;
     }
 
-    public boolean deleteById(final Long id) {
+    public boolean deleteById(final UUID id) {
         return repository.remove(id);
     }
 

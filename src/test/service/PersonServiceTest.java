@@ -6,6 +6,8 @@ import main.service.PersonService;
 import test.TestResult;
 import test.TestRunner;
 
+import java.util.UUID;
+
 
 public class PersonServiceTest {
 
@@ -17,16 +19,16 @@ public class PersonServiceTest {
 
     public void runTests() {
         runTest("shouldFindAll", this::shouldFindAll);
-        runTest("shouldCreateValidPerson", this::shouldCreateValidPerson);
+        runTest("shouldCreateAndDeleteValidPerson", this::shouldCreateAndDeleteValidPerson);
         runTest("shouldThrowWhenCreatingInvalidPerson", this::shouldThrowWhenCreatingInvalidPerson);
         runTest("shouldFindById", this::shouldFindById);
-        runTest("shouldThrowWhenSearchingInvalidId", this::shouldThrowWhenSearchingInvalidId);
+        runTest("shouldThrowWhenSearchingForNonExistingId", this::shouldThrowWhenSearchingForNonExistingId);
         runTest("shouldFindByFirstName", this::shouldFindByFirstName);
         runTest("shouldNotFindByFirstName", this::shouldNotFindByFirstName);
         runTest("shouldModifyPerson", this::shouldModifyPerson);
         runTest("shouldThrowWhenModifyingInvalidPerson", this::shouldThrowWhenModifyingInvalidPerson);
         runTest("shouldDeleteById", this::shouldDeleteById);
-        runTest("shouldThrowWhenDeletingByInvalidId", this::shouldThrowWhenDeletingByInvalidId);
+        runTest("shouldFailWhenDeletingByInvalidId", this::shouldFailWhenDeletingByInvalidId);
     }
 
     private void runTest(String name, TestRunner testRunner) {
@@ -46,9 +48,10 @@ public class PersonServiceTest {
 
     // ------------------ CREATE TESTS ------------------
 
-    private TestResult shouldCreateValidPerson() {
+    private TestResult shouldCreateAndDeleteValidPerson() {
         try {
-            service.create(Type.EXTERNAL, "John", "Doe", "123456789", "12345678910", "john@example.com");
+            var person = service.create(Type.EXTERNAL, "John", "Doe", "123456789", "12345678910", "john@example.com");
+            service.deleteById(person.personId());
             return TestResult.succeed();
         } catch (Exception e) {
             return TestResult.failed(e.getMessage());
@@ -67,16 +70,19 @@ public class PersonServiceTest {
     // ------------------ FIND BY ID ------------------
 
     private TestResult shouldFindById() {
-        var personOptional = service.findById(1L);
+        var all = service.findAll();
+        if (all.isEmpty()) return TestResult.failed("No persons found");
+        var existingId = all.getFirst().personId();
+        var personOptional = service.findById(existingId);
         if (personOptional.isPresent()) {
             return TestResult.succeed();
         }
         return TestResult.failed("Person not found by ID");
     }
 
-    private TestResult shouldThrowWhenSearchingInvalidId() {
+    private TestResult shouldThrowWhenSearchingForNonExistingId() {
         try {
-            var personOptional = service.findById(-1L);
+            var personOptional = service.findById(UUID.randomUUID());
             if (personOptional.isEmpty()) {
                 return TestResult.failed("Exception expected");
             }
@@ -109,27 +115,32 @@ public class PersonServiceTest {
 
     private TestResult shouldModifyPerson() {
         try {
-            var modified = new Person(1L, "Johnny", "Doe", "123456789", "john@example.com", "12345678901", Type.EXTERNAL);
-            service.modify(modified);
+            var newPerson = service.create(Type.INTERNAL, "new", "new", "123456789",
+                    "12345678910", "new@example.com");
 
-            var retrieved = service.findById(1L);
-            if (retrieved.isPresent() && retrieved.get().firstName().equals("Johnny")) {
+            var modified = new Person(newPerson.personId(), "modified",
+                    "modified", "123456789", "modified@example.com", "12345678901", Type.INTERNAL);
+
+            service.modify(modified);
+            var retrieved = service.findById(modified.personId());
+
+            if (retrieved.isPresent() && retrieved.get().firstName().equals("modified")) {
+                service.deleteById(modified.personId());
                 return TestResult.succeed();
+            } else {
+                return TestResult.failed("Person not modified");
             }
         } catch (Exception e) {
             return TestResult.failed(e.getMessage());
         }
-        return TestResult.failed("Person not modified");
     }
 
     private TestResult shouldThrowWhenModifyingInvalidPerson() {
         try {
-            var personOptional = service.findById(1L);
-
-            if (personOptional.isEmpty()) {
-                return TestResult.failed("Person not found by ID");
-            }
-            var person = new Person(personOptional.get().personId(), "John", "Doe", "123456789",
+            var all = service.findAll();
+            if (all.isEmpty()) return TestResult.failed("No persons found");
+            var existingId = all.getFirst().personId();
+            var person = new Person(existingId, "John", "Doe", "123456789",
                     "invalid-email", "12345678910", Type.EXTERNAL);
             service.modify(person);
             return TestResult.failed("Expected exception");
@@ -141,16 +152,22 @@ public class PersonServiceTest {
     // ------------------ DELETE ------------------
 
     private TestResult shouldDeleteById() {
-        service.deleteById(1L);
-        var deleted = service.findById(1L);
+
+        var person = service.create(Type.INTERNAL, "deleted", "deleted", "123456789",
+                "12345678910", "deleted@example.com");
+
+        service.deleteById(person.personId());
+
+        var deleted = service.findById(person.personId());
+
         if (deleted.isEmpty()) {
             return TestResult.succeed();
         }
         return TestResult.failed("Person not deleted");
     }
 
-    private TestResult shouldThrowWhenDeletingByInvalidId() {
-        boolean removed = service.deleteById(-1L);
+    private TestResult shouldFailWhenDeletingByInvalidId() {
+        boolean removed = service.deleteById(UUID.randomUUID());
         if (!removed) {
             return TestResult.succeed();
         }

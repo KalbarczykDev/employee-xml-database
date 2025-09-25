@@ -12,7 +12,7 @@ public abstract class XmlRepository<T> {
 
     protected abstract void writeEntity(final File file, final T entity);
 
-    protected abstract String entityId(final T entity);
+    protected abstract UUID entityId(final T entity);
 
     protected abstract Type entityType(final T entity);
 
@@ -23,8 +23,8 @@ public abstract class XmlRepository<T> {
         };
     }
 
-    protected File resolvePath(final Type type, final String entityId) {
-        return new File(typeToBasePath(type) + entityId + ".xml");
+    protected File resolvePath(final Type type, final UUID entityId) {
+        return new File(typeToBasePath(type) + entityId.toString() + ".xml");
     }
 
     protected String extractTagValue(final List<String> lines, final String tag) {
@@ -38,9 +38,9 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public Optional<T> findById(final Long id) {
+    public Optional<T> findById(final UUID id) {
         for (var type : Type.values()) {
-            var file = resolvePath(type, String.valueOf(id));
+            var file = resolvePath(type, id);
             if (file.exists()) {
                 try {
                     return Optional.of(parseEntity(file));
@@ -66,9 +66,9 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public boolean remove(final Long id) {
+    public boolean remove(final UUID id) {
         for (var type : Type.values()) {
-            var file = resolvePath(type, String.valueOf(id));
+            var file = resolvePath(type, id);
             if (file.exists()) return file.delete();
         }
         return false;
@@ -102,28 +102,8 @@ public abstract class XmlRepository<T> {
     }
 
 
-    public Long findNextId() {
-        long maxId = -1L;
-
-        for (Type type : Type.values()) {
-            var dir = new File(typeToBasePath(type));
-            if (!dir.exists()) continue;
-
-            var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
-            if (files == null) continue;
-
-            for (var file : files) {
-                var name = file.getName();
-                var idPart = name.substring(0, name.length() - 4);
-                try {
-                    long id = Long.parseLong(idPart);
-                    if (id > maxId) maxId = id;
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-
-        return maxId + 1;
+    public UUID generateId() {
+        return UUID.randomUUID();
     }
 
 }

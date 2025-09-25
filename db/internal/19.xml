@@ -1,9 +1,0 @@
-<person>
-  <personId>19</personId>
-  <firstName>InternalFirst10</firstName>
-  <lastName>InternalLast10</lastName>
-  <mobile>7000000010</mobile>
-  <email>internal10@example.com</email>
-  <pesel>80000000010</pesel>
-  <type>EXTERNAL</type>
-</person>
