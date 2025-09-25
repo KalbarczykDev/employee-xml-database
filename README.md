@@ -29,4 +29,4 @@ However, if you spot any bugs or have ideas for improvements, feel free to open 
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](LICENSE)
