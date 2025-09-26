@@ -4,6 +4,8 @@ package main.repository;
 import main.model.Type;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 public abstract class XmlRepository<T> {
@@ -27,14 +29,28 @@ public abstract class XmlRepository<T> {
         return new File(typeToBasePath(type) + entityId.toString() + ".xml");
     }
 
-    protected String extractTagValue(final List<String> lines, final String tag) {
-        for (var line : lines) {
-            line = line.trim();
-            if (line.startsWith("<" + tag + ">") && line.endsWith("</" + tag + ">")) {
-                return line.substring(tag.length() + 2, line.length() - tag.length() - 3);
+    protected Map<String, String> extractTagValuesFromFile(final File file) {
+
+        try {
+            var lines = Files.readAllLines(file.toPath());
+            var map = new HashMap<String, String>();
+            for (var line : lines) {
+                line = line.trim();
+                if (line.startsWith("<") && line.contains(">") && line.endsWith(">")) {
+                    var start = line.indexOf('<') + 1;
+                    var end = line.indexOf('>', start);
+                    var tag = line.substring(start, end);
+                    var closing = "</" + tag + ">";
+                    if (line.endsWith(closing)) {
+                        var value = line.substring(end + 1, line.length() - closing.length());
+                        map.put(tag, value);
+                    }
+                }
             }
+            return map;
+        } catch (IOException e) {
+            throw new RuntimeException("Error when parsing entity", e);
         }
-        return null;
     }
 
 

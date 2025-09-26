@@ -11,20 +11,18 @@ import java.util.*;
 public final class PersonXmlRepository extends XmlRepository<Person> {
     @Override
     protected Person parseEntity(final File file) {
-        try {
-            var lines = Files.readAllLines(file.toPath());
-            var id = UUID.fromString(extractTagValue(lines, "personId"));
-            var firstName = extractTagValue(lines, "firstName");
-            var lastName = extractTagValue(lines, "lastName");
-            var mobile = extractTagValue(lines, "mobile");
-            var email = extractTagValue(lines, "email");
-            var pesel = extractTagValue(lines, "pesel");
-            var typeStr = extractTagValue(lines, "type");
-            var type = Type.fromString(typeStr);
-            return new Person(id, firstName, lastName, mobile, email, pesel, type);
-        } catch (IOException e) {
-            throw new RuntimeException("Error when parsing entity: " + e);
-        }
+        var values = extractTagValuesFromFile(file);
+
+        var id = UUID.fromString(values.get("personId"));
+        var firstName = values.get("firstName");
+        var lastName = values.get("lastName");
+        var mobile = values.get("mobile");
+        var email = values.get("email");
+        var pesel = values.get("pesel");
+        var typeStr = values.get("type");
+        var type = Type.fromString(typeStr);
+        return new Person(id, firstName, lastName, mobile, email, pesel, type);
+
 
     }
 
