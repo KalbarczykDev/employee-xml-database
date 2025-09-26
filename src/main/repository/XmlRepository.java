@@ -6,9 +6,11 @@ import main.model.Type;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public abstract class XmlRepository<T> {
+    private List<T> cache = null;
 
     protected abstract T parseEntity(final File file);
 
@@ -27,6 +29,17 @@ public abstract class XmlRepository<T> {
 
     protected File resolvePath(final Type type, final UUID entityId) {
         return new File(typeToBasePath(type) + entityId.toString() + ".xml");
+    }
+
+    protected void ensureParentExists(final File file) throws IOException {
+        var parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            Files.createDirectories(parent.toPath());
+        }
+    }
+
+    protected void invalidateCache() {
+        cache = null;
     }
 
     protected Map<String, String> extractTagValuesFromFile(final File file) {
@@ -75,7 +88,9 @@ public abstract class XmlRepository<T> {
             throw new RuntimeException("Entity with ID '" + entityId(entity) + "' already exists.");
         }
         try {
+            ensureParentExists(file);
             writeEntity(file, entity);
+            invalidateCache();
         } catch (Exception e) {
             throw new RuntimeException("Error creating entity", e);
         }
@@ -85,7 +100,13 @@ public abstract class XmlRepository<T> {
     public boolean remove(final UUID id) {
         for (var type : Type.values()) {
             var file = resolvePath(type, id);
-            if (file.exists()) return file.delete();
+            if (file.exists()) {
+                var deleted = file.delete();
+                if (deleted) {
+                    invalidateCache();
+                }
+                return deleted;
+            }
         }
         return false;
     }
@@ -95,7 +116,9 @@ public abstract class XmlRepository<T> {
         var file = resolvePath(entityType(entity), entityId(entity));
 
         try {
+            ensureParentExists(file);
             writeEntity(file, entity);
+            invalidateCache();
         } catch (Exception e) {
             throw new RuntimeException("Error modifying entity", e);
         }
@@ -103,18 +126,26 @@ public abstract class XmlRepository<T> {
 
 
     public List<T> findAll() {
+        var cached = cache;
+        if (cached != null) {
+            return cached;
+        }
+
         var all = new ArrayList<T>();
 
         for (var type : Type.values()) {
-            var dir = new File(typeToBasePath(type));
-            if (!dir.exists()) continue;
-            var files = dir.listFiles((_, name) -> name.endsWith(".xml"));
-            if (files == null) continue;
-            for (var file : files) {
-                all.add(parseEntity(file));
+            var dir = Path.of(typeToBasePath(type));
+            if (!Files.exists(dir)) continue;
+            try (var stream = Files.list(dir)) {
+                stream.filter(p -> p.toString().endsWith(".xml"))
+                        .forEach(p -> all.add(parseEntity(p.toFile())));
+            } catch (IOException e) {
+                throw new RuntimeException("Error Listing Directory: " + dir, e);
             }
+
         }
-        return all;
+        cache = List.copyOf(all);
+        return Collections.unmodifiableList(all);
     }
 
 
